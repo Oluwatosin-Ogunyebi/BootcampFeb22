@@ -10,19 +10,27 @@ public class GameManager : MonoBehaviour
 
     private Pin[] _currentPins = new Pin[0];
     private Ball _currentBall;
+
+    [SerializeField] private Transform _pinSetSpawnPosition;
+    [SerializeField] private GameObject _pinSetPrefab;
+
+    private bool _throwStarted;
+    private int _throwNumber;
     // Start is called before the first frame update
     void Start()
     {
         playerController = GameObject.FindObjectOfType<PlayerController>();
+        Invoke(nameof(SetupFrame), 1);
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (!playerController.wasBallThrown)
-        {
-            //Player has not thrown ball
-        }
+        if (!_throwStarted || !playerController.wasBallThrown)
+            return;
+
+        if (CheckIfPiecesAreStatic())
+            FinishThrow();
     }
 
     public void PinKnockedDown()
@@ -34,12 +42,12 @@ public class GameManager : MonoBehaviour
 
     public void BallKnockedDown()
     {
-        //Called when ball gets into pit
+        _currentBall = null;
     }
 
     public void BallThrown(Ball ball)
     {
-        //Reference ball that is thrown
+        _currentBall = ball;
     }
 
     private  bool CheckIfPiecesAreStatic()
@@ -57,17 +65,60 @@ public class GameManager : MonoBehaviour
 
     private void SetupFrame()
     {
-        //Used to setup frame
+        _throwNumber = 0;
+        DisposeLastFrame();
+        Instantiate(_pinSetPrefab, _pinSetSpawnPosition.position, _pinSetSpawnPosition.rotation);
+        _currentPins = FindObjectsOfType<Pin>();
+
+        SetupThrow();
     }
 
     private void FinishThrow()
     {
-        //Called when we complete a throw
+        _throwStarted = false;
+
+        foreach (var pin in _currentPins)
+        {
+            if (pin != null && pin.DidPinFall)
+            {
+                currentScore++;
+                Destroy(pin.gameObject);
+            }
+        }
+
+        if (_throwNumber == 0 && currentScore < 10)
+        {
+            Invoke(nameof(SetupThrow), 1);
+            _throwNumber++;
+            return;
+        }
+
+        Invoke(nameof(SetupFrame), 1);
     }
 
     public void SetupThrow()
     {
-        //Creates initial conditions to allow player throw ball
+        foreach (var pin in _currentPins)
+        {
+            if (pin != null)
+                pin.ResetPosition();
+        }
+
+        if (_currentBall != null) Destroy(_currentBall.gameObject);
+
+        playerController.StartAiming();
+        _throwStarted = true;
+    }
+
+    public void DisposeLastFrame()
+    {
+        foreach (var pin in _currentPins)
+        {
+            if (pin != null)
+            {
+                Destroy(pin.gameObject);
+            }
+        }
     }
 
 }

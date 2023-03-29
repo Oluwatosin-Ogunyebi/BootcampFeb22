@@ -8,6 +8,16 @@ public class Pin : MonoBehaviour
     Quaternion lastRotation;
     int framesWithoutMoving;
 
+    Vector3 startingPosition;
+    Quaternion startingRotation;
+    Rigidbody pinRb;
+
+    private void Awake()
+    {
+        startingPosition = transform.position;
+        startingRotation = transform.rotation;
+        pinRb = this.GetComponent<Rigidbody>();
+    }
     public bool DidPinFall { get; private set; }
 
 
@@ -42,5 +52,17 @@ public class Pin : MonoBehaviour
         framesWithoutMoving = didPinMove ? 0 : framesWithoutMoving + 1;
 
         return framesWithoutMoving <= 10;
+    }
+
+    public void ResetPosition()
+    {
+        pinRb.position = startingPosition;
+        pinRb.rotation = startingRotation;
+
+        pinRb.velocity = Vector3.zero;
+        pinRb.angularVelocity = Vector3.zero;
+
+        lastPosition = startingPosition;
+        lastRotation = startingRotation;
     }
 }
