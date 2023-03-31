@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    public int currentScore;
+
 
     PlayerController playerController;
 
@@ -16,6 +17,19 @@ public class GameManager : MonoBehaviour
 
     private bool _throwStarted;
     private int _throwNumber;
+
+    [Header("UI Text Fields")]
+    [SerializeField] private TMP_Text _frameNumber;
+    [SerializeField] private TMP_Text _firstThrowScore;
+    [SerializeField] private TMP_Text _secondThrowScore;
+    [SerializeField] private TMP_Text _frametotalScore;
+
+    private int _currentFrameScore;
+    private int _currentThrowScore;
+    private int _currentFrame;
+    private int _totalScore;
+
+
     // Start is called before the first frame update
     void Start()
     {
@@ -33,11 +47,36 @@ public class GameManager : MonoBehaviour
             FinishThrow();
     }
 
+    public void UpdateScoreUI()
+    {
+        if (_throwNumber == 0)
+        {
+            if (_currentFrameScore == 10)
+                _secondThrowScore.text = "X";
+            else
+                _firstThrowScore.text = _currentFrameScore.ToString();
+        }
+        else
+        {
+            _secondThrowScore.text = _currentFrameScore == 10 ? "/" : _currentThrowScore.ToString();
+        }
+
+    }
+
+    private void ResetScoreUI()
+    {
+        _frameNumber.text = _currentFrame.ToString();
+        _firstThrowScore.text = "";
+        _secondThrowScore.text = "";
+        _frametotalScore.text = _totalScore.ToString();
+    }
+
     public void PinKnockedDown()
     {
-        currentScore++;
-        Debug.Log("Current Score is: "+currentScore);
-        //Called when each pin is hit and pin head comes in contact with floor
+        _currentFrameScore++;
+        _currentThrowScore++;
+        Debug.Log("Current Score is: "+_currentFrameScore);
+        //Called when each pin is hit and pin head comes in contact with pit
     }
 
     public void BallKnockedDown()
@@ -70,6 +109,8 @@ public class GameManager : MonoBehaviour
         Instantiate(_pinSetPrefab, _pinSetSpawnPosition.position, _pinSetSpawnPosition.rotation);
         _currentPins = FindObjectsOfType<Pin>();
 
+        _currentFrame++;
+        ResetScoreUI();
         SetupThrow();
     }
 
@@ -81,12 +122,16 @@ public class GameManager : MonoBehaviour
         {
             if (pin != null && pin.DidPinFall)
             {
-                currentScore++;
+                _currentFrameScore++;
+                _currentThrowScore++;
                 Destroy(pin.gameObject);
             }
         }
 
-        if (_throwNumber == 0 && currentScore < 10)
+        _totalScore += _currentThrowScore;
+        UpdateScoreUI();
+
+        if (_throwNumber == 0 && _currentFrameScore < 10)
         {
             Invoke(nameof(SetupThrow), 1);
             _throwNumber++;
@@ -98,6 +143,7 @@ public class GameManager : MonoBehaviour
 
     public void SetupThrow()
     {
+        _currentThrowScore = 0;
         foreach (var pin in _currentPins)
         {
             if (pin != null)
