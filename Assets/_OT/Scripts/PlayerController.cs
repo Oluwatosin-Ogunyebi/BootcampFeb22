@@ -14,12 +14,24 @@ public class PlayerController : MonoBehaviour
     public bool wasBallThrown;
 
     private Rigidbody _bowlingBallPrefabInstance;
+
+    private int ballIndex;
+    private bool isBallSelected;
     // Start is called before the first frame update
     void Start()
     {
-
+        
     }
-
+    private void Awake()
+    {
+        if (FindObjectOfType<SelectBall>() != null)
+        {
+            ballIndex = FindObjectOfType<SelectBall>().ballIndex;
+            isBallSelected = true;
+        }
+        else
+            isBallSelected = false;
+    }
     public void StartAiming()
     {
         _animDirection.SetBool("Aiming", true);
@@ -38,7 +50,8 @@ public class PlayerController : MonoBehaviour
         if (wasBallThrown || !Input.GetButtonDown("Fire1")) return;
 
         wasBallThrown = true;
-        _bowlingBallPrefabInstance = Instantiate(_bowlingBallPrefabs[RandomNumber()], transform.position, transform.rotation);
+        if (!isBallSelected) ballIndex = RandomNumber();
+        _bowlingBallPrefabInstance = Instantiate(_bowlingBallPrefabs[ballIndex], transform.position, transform.rotation);
         _bowlingBallPrefabInstance.AddForce((_aimDirection.forward * -1) * _throwSpeed, ForceMode.Impulse);
         _followTarget.playerPosition = _bowlingBallPrefabInstance.transform;
         _gameManager.BallThrown(_bowlingBallPrefabInstance.GetComponent<Ball>());

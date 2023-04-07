@@ -9,11 +9,23 @@ public class Ball : MonoBehaviour
     Quaternion lastRotation;
     int framesWithoutMoving;
 
+    AudioSource ballAudioSource;
+    private void Awake()
+    {
+        ballAudioSource = this.GetComponent<AudioSource>();
+    }
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("BowlingTrack"))
         {
             Debug.Log("Ball Hit the bowling track");
+            ballAudioSource.Play();
+            return;
+        }
+        if (collision.gameObject.CompareTag("Pin"))
+        {
+            var gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+            gameManager.PlayStrikeSoundEffect();
         }
     }
 
@@ -27,6 +39,8 @@ public class Ball : MonoBehaviour
             Destroy(this.gameObject,1f);
         }
     }
+
+    
 
     public bool DidBallMove()
     {
