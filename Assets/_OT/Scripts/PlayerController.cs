@@ -47,7 +47,13 @@ public class PlayerController : MonoBehaviour
 
     void TryThrowBall()
     {
+#if UNITY_STANDALONE
         if (wasBallThrown || !Input.GetButtonDown("Fire1")) return;
+#endif
+
+#if UNITY_ANDROID || UNITY_IOS
+        if (wasBallThrown || !DetectSwipeUp()) return;
+#endif
 
         wasBallThrown = true;
         if (!isBallSelected) ballIndex = RandomNumber();
@@ -71,4 +77,22 @@ public class PlayerController : MonoBehaviour
         return randomNum;
     }
 
+#if UNITY_ANDROID || UNITY_IOS
+    public bool DetectSwipeUp()
+    {
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)
+        {
+            Vector2 touchDeltaPosition = Input.GetTouch(0).deltaPosition;
+            if (touchDeltaPosition.y > 0)
+            {
+                if (touchDeltaPosition.magnitude > 50)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+#endif
 }
