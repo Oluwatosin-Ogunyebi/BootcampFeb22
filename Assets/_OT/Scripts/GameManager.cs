@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -31,6 +32,9 @@ public class GameManager : MonoBehaviour
     private int _currentFrame;
     private int _totalScore;
 
+    private float remainingTimeout;
+    private float throwTimeout = 10f;
+
 
     // Start is called before the first frame update
     void Start()
@@ -44,8 +48,8 @@ public class GameManager : MonoBehaviour
     {
         if (!_throwStarted || !playerController.wasBallThrown)
             return;
-
-        if (CheckIfPiecesAreStatic())
+        remainingTimeout -= Time.deltaTime;
+        if (remainingTimeout <= 0 || CheckIfPiecesAreStatic())
             FinishThrow();
     }
 
@@ -139,10 +143,19 @@ public class GameManager : MonoBehaviour
             _throwNumber++;
             return;
         }
-
+        if (_currentFrame >= 10)
+        {
+            Debug.Log("Last Frame");
+            Invoke(nameof(FinishGame), 5);
+            return;
+        }
         Invoke(nameof(SetupFrame), 1);
     }
 
+    public void FinishGame()
+    {
+        SceneManager.LoadScene("MainMenu");
+    }
     public void SetupThrow()
     {
         _currentThrowScore =  0;
@@ -156,6 +169,7 @@ public class GameManager : MonoBehaviour
 
         playerController.StartAiming();
         _throwStarted = true;
+        remainingTimeout = throwTimeout;
     }
 
     public void DisposeLastFrame()
