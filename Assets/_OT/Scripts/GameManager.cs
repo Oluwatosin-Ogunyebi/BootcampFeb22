@@ -8,12 +8,14 @@ public class GameManager : MonoBehaviour
 
 
     PlayerController playerController;
+    
 
     private Pin[] _currentPins = new Pin[0];
     private Ball _currentBall;
 
     [SerializeField] private Transform _pinSetSpawnPosition;
     [SerializeField] private GameObject _pinSetPrefab;
+    [SerializeField] private AudioSource audioSource;
 
     private bool _throwStarted;
     private int _throwNumber;
@@ -104,7 +106,7 @@ public class GameManager : MonoBehaviour
 
     private void SetupFrame()
     {
-        _throwNumber = 0;
+        _throwNumber = _currentFrameScore = 0;
         DisposeLastFrame();
         Instantiate(_pinSetPrefab, _pinSetSpawnPosition.position, _pinSetSpawnPosition.rotation);
         _currentPins = FindObjectsOfType<Pin>();
@@ -143,7 +145,7 @@ public class GameManager : MonoBehaviour
 
     public void SetupThrow()
     {
-        _currentThrowScore = 0;
+        _currentThrowScore =  0;
         foreach (var pin in _currentPins)
         {
             if (pin != null)
@@ -167,4 +169,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void PlayStrikeSoundEffect()
+    {
+        if (!audioSource.isPlaying)
+        {
+            audioSource.Play();
+        }
+
+    }
 }
